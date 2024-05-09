@@ -1,8 +1,29 @@
 const express = require("express");
+const mysql = require("mysql2");
 const app = express();
 
+const con = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "mego_users",
+});
+
+con.connect((err) => {
+  if (err) {
+    console.error(err);
+  } else console.log("Connected to MySQL");
+});
 app.get("/users", (req, res) => {
-  res.send("Return users list");
+  con.query("SELECT * FROM users", (err, result) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error");
+    } else {
+      console.log(result);
+      res.status(200).send(result);
+    }
+  });
 });
 
 app.get("/users/:id", (req, res) => {
