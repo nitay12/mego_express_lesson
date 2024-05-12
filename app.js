@@ -1,5 +1,6 @@
 const express = require("express");
 const mysql = require("mysql2");
+
 const app = express();
 
 const con = mysql.createConnection({
@@ -14,6 +15,9 @@ con.connect((err) => {
     console.error(err);
   } else console.log("Connected to MySQL");
 });
+
+app.use(express.json());
+
 app.get("/users", (req, res) => {
   con.query("SELECT * FROM users", (err, result) => {
     if (err) {
@@ -28,7 +32,15 @@ app.get("/users", (req, res) => {
 
 app.get("/users/:id", (req, res) => {
   let id = req.params.id;
-  res.send(`Return user id ${id} details`);
+  con.query(`SELECT * FROM users WHERE id = ?`, [id], (err, result) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error");
+    } else {
+      console.log(result);
+      res.status(200).send(result);
+    }
+  });
 });
 app.put("/users/:id", (req, res) => {
   let id = req.params.id;
@@ -39,7 +51,21 @@ app.delete("/users/:id", (req, res) => {
   res.send(`Delete user id ${id}`);
 });
 app.post("/users", (req, res) => {
-  res.send("Add a user to the DB");
+  const { username, email, password } = req.body;
+  con.query(
+    "INSERT INTO users (username, email, password) VALUES (?, ? , ?)",
+    [username, email, password],
+    (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send("Error");
+      } else {
+        res
+          .status(200)
+          .send({ "id": result.insertId, username, email, password });
+      }
+    }
+  );
 });
 
 app.listen(3000, () => {
