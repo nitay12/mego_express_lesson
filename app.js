@@ -6,7 +6,7 @@ const app = express();
 const con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "",
+  password: "Root1234",
   database: "mego_users",
 });
 
@@ -44,7 +44,20 @@ app.get("/users/:id", (req, res) => {
 });
 app.put("/users/:id", (req, res) => {
   let id = req.params.id;
-  res.send(`Update user id ${id} details`);
+  const updatedUser = req.body;
+  con.query(
+    "UPDATE users SET ? WHERE id=?",
+    [updatedUser, id],
+    (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send("Error");
+      } else {
+        console.log(result);
+        res.status(200).send({"id": id, ...updatedUser});
+      }
+    }
+  );
 });
 app.delete("/users/:id", (req, res) => {
   let id = req.params.id;
@@ -62,7 +75,7 @@ app.post("/users", (req, res) => {
       } else {
         res
           .status(200)
-          .send({ "id": result.insertId, username, email, password });
+          .send({ id: result.insertId, username, email, password });
       }
     }
   );
