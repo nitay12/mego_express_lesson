@@ -61,8 +61,21 @@ app.put("/users/:id", (req, res) => {
 });
 app.delete("/users/:id", (req, res) => {
   let id = req.params.id;
-  res.send(`Delete user id ${id}`);
+  con.query(
+    "DELETE FROM users WHERE id=?",
+    [id],
+    (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send("Error");
+      } else {
+        console.log(result);
+        res.status(200).send({"id": id});
+      }
+    }
+  );
 });
+
 app.post("/users", (req, res) => {
   const { username, email, password } = req.body;
   con.query(
